@@ -1,0 +1,60 @@
+QMainWindow {
+    background-color: #1a1b26;
+}
+QWidget {
+    color: #a9b1d6;
+    font-family: "Inter", "Segoe UI", "Ubuntu", sans-serif;
+    font-size: 13px;
+}
+QFrame {
+    background-color: #24283b;
+    border: 1px solid #414868;
+    border-radius: 8px;
+}
+QLineEdit, QComboBox {
+    background-color: #1f2335;
+    border: 1px solid #414868;
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: #c0caf5;
+}
+QLineEdit:focus, QComboBox:focus {
+    border: 1px solid #7aa2f7;
+    background-color: #24283b;
+}
+QPushButton {
+    background-color: #3b4261;
+    border: 1px solid #565f89;
+    border-radius: 6px;
+    padding: 7px 14px;
+    color: #c0caf5;
+    font-weight: 600;
+}
+QPushButton:hover {
+    background-color: #414868;
+    border-color: #7aa2f7;
+}
+QPushButton:pressed {
+    background-color: #3b4261;
+}
+QRadioButton {
+    color: #c0caf5;
+    spacing: 8px;
+}
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+}
+QScrollArea {
+    border: 1px solid #414868;
+    border-radius: 6px;
+    background-color: #1f2335;
+}
+#scroll_content {
+    background-color: #1f2335;
+}
+QStatusBar {
+    background-color: #16161e;
+    color: #787c99;
+    border-top: 1px solid #1f2335;
+}

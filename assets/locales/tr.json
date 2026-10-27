@@ -1,0 +1,18 @@
+{
+  "app_name": "MstPull - Video & Müzik İndirici",
+  "url_placeholder": "Video veya Oynatma Listesi URL'si girin...",
+  "paste_btn": "📋 Panodan Yapıştır",
+  "add_queue_btn": "➕ Kuyruğa Ekle",
+  "history_btn": "📜 İndirme Geçmişi",
+  "chk_playlist": "Tüm Oynatma Listesini İndir",
+  "video_quality": "Video Kalitesi",
+  "audio_quality": "MP3 Kalitesi",
+  "qual_best": "En Yüksek Kalite",
+  "qual_lowest": "En Düşük Kalite",
+  "target_folder": "Hedef Klasör",
+  "browse_btn": "📁 Gözat",
+  "queue_title": "İndirme Kuyruğu",
+  "developer_credit": "Geliştirici: Mustafa Satılmış",
+  "donate_btn": "☕ Geliştiriciye Destek Ol",
+  "status_ready": "Sistem Hazır"
+}

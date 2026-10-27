@@ -1,0 +1,23 @@
+# Python / PyInstaller / Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Sanal Ortam (Virtual Environment)
+.venv/
+venv/
+ENV/
+
+# Derleme Çıktıları ve DEB Paketleri
+build_out/
+dist/
+build/
+*.deb
+
+# IDE ve Sistem Dosyaları
+.vscode/
+.idea/
+.DS_Store
+*.log
