@@ -6,3 +6,6 @@ build_out/
 .vscode/
 .idea/
 *.log
+
+# Aider files
+.aider*
