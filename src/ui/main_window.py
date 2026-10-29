@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
         self.history_service = HistoryService(self.paths.history_dir)
         
         self.active_widgets = {}
+        self.completed_widgets = {}
         self.fetchers = {}
 
         self.i18n.language_changed.connect(self.retranslate_ui)
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.clipboard_monitor.start()
 
         self.retranslate_ui()
+        self.status_bar.showMessage(self.i18n.tr("status_ready"))
 
     def apply_theme(self):
         qss_path = self.paths.assets_dir / "styles" / "dark.qss"
@@ -70,14 +72,14 @@ class MainWindow(QMainWindow):
 
         self.url_input = LocalizedLineEdit(self.i18n)
 
-        self.paste_btn = QPushButton("📋 Panodan Yapıştır")
+        self.paste_btn = QPushButton(self.i18n.tr("paste_btn"))
         self.paste_btn.clicked.connect(self.paste_from_clipboard)
 
-        self.add_queue_btn = QPushButton("➕ Kuyruğa Ekle")
+        self.add_queue_btn = QPushButton(self.i18n.tr("add_queue_btn"))
         self.add_queue_btn.setStyleSheet("background-color: #7aa2f7; color: #15161e; font-weight: bold; border: none;")
         self.add_queue_btn.clicked.connect(self.add_to_queue)
 
-        self.history_btn = QPushButton("📜 İndirme Geçmişi")
+        self.history_btn = QPushButton(self.i18n.tr("history_btn"))
         self.history_btn.clicked.connect(self.open_history_dialog)
 
         self.lang_combo = QComboBox()
@@ -100,34 +102,43 @@ class MainWindow(QMainWindow):
         left_panel = QFrame()
         left_layout = QVBoxLayout(left_panel)
 
-        self.lbl_video_qual = QLabel("Video Kalitesi")
+        self.lbl_video_qual = QLabel(self.i18n.tr("video_quality"))
         self.lbl_video_qual.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 13px;")
         self.combo_video_qual = QComboBox()
+        self.combo_video_qual.addItems([
+            self.i18n.tr("qual_best"), "1080p (Full HD)", "720p (HD)", "480p", self.i18n.tr("qual_lowest")
+        ])
         left_layout.addWidget(self.lbl_video_qual)
         left_layout.addWidget(self.combo_video_qual)
 
         left_layout.addSpacing(6)
-        self.lbl_audio_qual = QLabel("MP3 Kalitesi")
+        self.lbl_audio_qual = QLabel(self.i18n.tr("audio_quality"))
         self.lbl_audio_qual.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 13px;")
         self.combo_audio_qual = QComboBox()
+        self.combo_audio_qual.addItems(["320 kbps", "256 kbps", "192 kbps", "128 kbps"])
         left_layout.addWidget(self.lbl_audio_qual)
         left_layout.addWidget(self.combo_audio_qual)
 
         left_layout.addSpacing(6)
-        self.lbl_concurrent = QLabel("⚡ Eşzamanlı İndirme:")
+        self.lbl_concurrent = QLabel(self.i18n.tr("concurrent_label"))
         self.lbl_concurrent.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 13px;")
         self.combo_concurrent = QComboBox()
-        self.combo_concurrent.addItems(["1 Dosya", "2 Dosya (Varsayılan)", "3 Dosya", "5 Dosya"])
+        self.combo_concurrent.addItems([
+            self.i18n.tr("concurrent_1"),
+            self.i18n.tr("concurrent_2"),
+            self.i18n.tr("concurrent_3"),
+            self.i18n.tr("concurrent_5"),
+        ])
         self.combo_concurrent.setCurrentIndex(1)
         self.combo_concurrent.currentIndexChanged.connect(self.on_concurrent_changed)
         left_layout.addWidget(self.lbl_concurrent)
         left_layout.addWidget(self.combo_concurrent)
 
         left_layout.addSpacing(6)
-        self.lbl_rate_limit = QLabel("🚀 Hız Limiti:")
+        self.lbl_rate_limit = QLabel(self.i18n.tr("rate_limit_label"))
         self.lbl_rate_limit.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 13px;")
         self.combo_rate_limit = QComboBox()
-        self.combo_rate_limit.addItem("Sınırsız", "Unlimited")
+        self.combo_rate_limit.addItem(self.i18n.tr("rate_unlimited"), "Unlimited")
         self.combo_rate_limit.addItem("1 MB/s", "1M")
         self.combo_rate_limit.addItem("2 MB/s", "2M")
         self.combo_rate_limit.addItem("5 MB/s", "5M")
@@ -135,23 +146,23 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.lbl_rate_limit)
         left_layout.addWidget(self.combo_rate_limit)
 
-        self.chk_clipboard = QCheckBox("📋 Panodan Otomatik Algıla")
+        self.chk_clipboard = QCheckBox(self.i18n.tr("chk_clipboard"))
         self.chk_clipboard.setChecked(True)
         self.chk_clipboard.setStyleSheet("color: #7aa2f7; font-weight: 500; margin-top: 6px;")
         self.chk_clipboard.toggled.connect(self.toggle_clipboard_monitor)
         left_layout.addWidget(self.chk_clipboard)
 
-        self.chk_playlist = QCheckBox("Tüm Oynatma Listesini İndir")
+        self.chk_playlist = QCheckBox(self.i18n.tr("chk_playlist"))
         self.chk_playlist.setStyleSheet("color: #e0af68; font-weight: 500; margin-top: 4px;")
         left_layout.addWidget(self.chk_playlist)
 
         left_layout.addSpacing(6)
-        self.lbl_target_folder = QLabel("Hedef Klasör")
+        self.lbl_target_folder = QLabel(self.i18n.tr("target_folder"))
         self.lbl_target_folder.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 13px;")
         folder_layout = QHBoxLayout()
         self.folder_input = LocalizedLineEdit(self.i18n)
         self.folder_input.setText(str(self.paths.default_download_dir))
-        self.browse_btn = QPushButton("📁 Gözat")
+        self.browse_btn = QPushButton(self.i18n.tr("browse_btn"))
         self.browse_btn.clicked.connect(self.select_folder)
         folder_layout.addWidget(self.folder_input)
         folder_layout.addWidget(self.browse_btn)
@@ -166,7 +177,7 @@ class MainWindow(QMainWindow):
         right_layout = QVBoxLayout(right_panel)
 
         queue_header_layout = QHBoxLayout()
-        self.lbl_queue_title = QLabel("İndirme Kuyruğu")
+        self.lbl_queue_title = QLabel(self.i18n.tr("queue_title"))
         self.lbl_queue_title.setStyleSheet("font-weight: bold; color: #7aa2f7; font-size: 14px;")
         queue_header_layout.addWidget(self.lbl_queue_title)
         right_layout.addLayout(queue_header_layout)
@@ -184,11 +195,21 @@ class MainWindow(QMainWindow):
 
         master_layout.addLayout(body_layout)
 
+        # 15pt Sade Yasal Uyarı Metni
+        disc_txt = self.i18n.tr("disclaimer_text")
+        if disc_txt == "disclaimer_text" or not disc_txt:
+            disc_txt = "⚠️ YASAL UYARI: Bu programla telif hakkı olan içerikler indirilemez ve bu amaçla kullanılamaz. Tüm kullanım sorumluluğu son kullanıcıya aittir."
+        self.disclaimer_label = QLabel(disc_txt)
+        self.disclaimer_label.setStyleSheet("color: #f7768e; font-size: 15px; font-weight: bold; margin-top: 6px; margin-bottom: 4px; background: transparent;")
+        self.disclaimer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.disclaimer_label.setWordWrap(True)
+        master_layout.addWidget(self.disclaimer_label)
+
         # 3. ALT DURUM ÇUBUĞU
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
 
-        self.dev_label = QLabel("Geliştirici: Mustafa Satılmış")
+        self.dev_label = QLabel(self.i18n.tr("developer_credit"))
         self.dev_label.setStyleSheet("color: #787c99; font-weight: bold; margin-right: 10px;")
 
         self.github_btn = QPushButton("💻 GitHub")
@@ -208,7 +229,7 @@ class MainWindow(QMainWindow):
         """)
         self.github_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/mustafao9")))
 
-        self.footer_donate_btn = QPushButton("☕ Geliştiriciye Destek Ol")
+        self.footer_donate_btn = QPushButton(self.i18n.tr("donate_btn"))
         self.footer_donate_btn.setStyleSheet("background-color: #e0af68; color: #15161e; font-weight: bold; padding: 4px 12px; border: none;")
         self.footer_donate_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://buymeacoffee.com/mustafasatilmis")))
 
@@ -222,13 +243,13 @@ class MainWindow(QMainWindow):
         if icon_path.exists():
             self.tray_icon.setIcon(QIcon(str(icon_path)))
         else:
-            self.tray_icon.setIcon(self.style().standardIcon(QApplication.style().StandardPixmap.SP_ComputerIcon))
+            self.tray_icon.setIcon(self.style().standardIcon(QApplication.instance().style().StandardPixmap.SP_ComputerIcon))
 
         tray_menu = QMenu()
-        self.action_toggle_window = QAction("MstPull'u Göster / Gizle", self)
+        self.action_toggle_window = QAction(self.i18n.tr("tray_show_hide"), self)
         self.action_toggle_window.triggered.connect(self.toggle_window_visibility)
 
-        self.action_quit = QAction("Çıkış", self)
+        self.action_quit = QAction(self.i18n.tr("tray_quit"), self)
         self.action_quit.triggered.connect(self.force_quit_app)
 
         tray_menu.addAction(self.action_toggle_window)
@@ -252,16 +273,25 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if self.tray_icon.isVisible():
-            self.hide()
-            self.tray_icon.showMessage(
-                "MstPull Arka Planda Çalışıyor",
-                "Uygulama sistem tepsisine küçüldü.",
-                QSystemTrayIcon.MessageIcon.Information,
-                2000
+            reply = QMessageBox.question(
+                self,
+                self.i18n.tr("app_name"),
+                self.i18n.tr("background_question"),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes
             )
-            event.ignore()
-        else:
-            event.accept()
+            if reply == QMessageBox.StandardButton.Yes:
+                self.hide()
+                self.tray_icon.showMessage(
+                    "MstPull",
+                    self.i18n.tr("tray_minimized"),
+                    QSystemTrayIcon.MessageIcon.Information,
+                    2000
+                )
+                event.ignore()
+                return
+        self.tray_icon.hide()
+        event.accept()
 
     def force_quit_app(self):
         self.tray_icon.hide()
@@ -271,12 +301,17 @@ class MainWindow(QMainWindow):
         self.clipboard_monitor.is_enabled = checked
 
     def on_clipboard_url_detected(self, url: str):
+        # Kullanıcı zaten bir şey yazıyorsa ezme
+        if self.url_input.text().strip():
+            return
         self.url_input.setText(url)
-        self.status_bar.showMessage(f"📋 Panodan yeni bağlantı algılandı: {url[:35]}...")
+        self.status_bar.showMessage(
+            self.i18n.tr("clipboard_detected").format(url=url[:35] + "...")
+        )
         if not self.isVisible():
             self.tray_icon.showMessage(
-                "📋 Yeni Bağlantı Algılandı!",
-                f"Panodaki URL MstPull'a aktarıldı: {url[:40]}...",
+                self.i18n.tr("tray_new_link_title"),
+                self.i18n.tr("tray_new_link_body").format(url=url[:40] + "..."),
                 QSystemTrayIcon.MessageIcon.Information,
                 2500
             )
@@ -286,7 +321,9 @@ class MainWindow(QMainWindow):
         val = val_map.get(index, 2)
         self.queue_manager.set_max_concurrent(val)
 
-    def change_language(self, index):
+    def change_language(self, index=None):
+        if index is None:
+            index = self.lang_combo.currentIndex()
         lang_code = self.lang_combo.itemData(index)
         if lang_code:
             self.i18n.set_language(lang_code)
@@ -300,22 +337,82 @@ class MainWindow(QMainWindow):
 
         self.chk_playlist.setText(self.i18n.tr("chk_playlist"))
         self.lbl_video_qual.setText(self.i18n.tr("video_quality"))
+        current_v_idx = self.combo_video_qual.currentIndex()
+        self.combo_video_qual.blockSignals(True)
         self.combo_video_qual.clear()
         self.combo_video_qual.addItems([self.i18n.tr("qual_best"), "1080p (Full HD)", "720p (HD)", "480p", self.i18n.tr("qual_lowest")])
+        if current_v_idx >= 0:
+            self.combo_video_qual.setCurrentIndex(current_v_idx)
+        else:
+            self.combo_video_qual.setCurrentIndex(0)
+        self.combo_video_qual.blockSignals(False)
 
         self.lbl_audio_qual.setText(self.i18n.tr("audio_quality"))
+        current_a_idx = self.combo_audio_qual.currentIndex()
+        self.combo_audio_qual.blockSignals(True)
         self.combo_audio_qual.clear()
         self.combo_audio_qual.addItems(["320 kbps", "256 kbps", "192 kbps", "128 kbps"])
+        if current_a_idx >= 0:
+            self.combo_audio_qual.setCurrentIndex(current_a_idx)
+        else:
+            self.combo_audio_qual.setCurrentIndex(0)
+        self.combo_audio_qual.blockSignals(False)
 
         self.lbl_target_folder.setText(self.i18n.tr("target_folder"))
         self.browse_btn.setText(self.i18n.tr("browse_btn"))
         self.lbl_queue_title.setText(self.i18n.tr("queue_title"))
 
+        self.lbl_concurrent.setText(self.i18n.tr("concurrent_label"))
+        current_c_idx = self.combo_concurrent.currentIndex()
+        self.combo_concurrent.blockSignals(True)
+        self.combo_concurrent.clear()
+        self.combo_concurrent.addItems([
+            self.i18n.tr("concurrent_1"),
+            self.i18n.tr("concurrent_2"),
+            self.i18n.tr("concurrent_3"),
+            self.i18n.tr("concurrent_5"),
+        ])
+        if current_c_idx >= 0:
+            self.combo_concurrent.setCurrentIndex(current_c_idx)
+        else:
+            self.combo_concurrent.setCurrentIndex(1)
+        self.combo_concurrent.blockSignals(False)
+        val_map = {0: 1, 1: 2, 2: 3, 3: 5}
+        self.queue_manager.set_max_concurrent(val_map.get(self.combo_concurrent.currentIndex(), 2))
+
+        self.lbl_rate_limit.setText(self.i18n.tr("rate_limit_label"))
+        current_r_idx = self.combo_rate_limit.currentIndex()
+        self.combo_rate_limit.blockSignals(True)
+        self.combo_rate_limit.clear()
+        self.combo_rate_limit.addItem(self.i18n.tr("rate_unlimited"), "Unlimited")
+        self.combo_rate_limit.addItem("1 MB/s", "1M")
+        self.combo_rate_limit.addItem("2 MB/s", "2M")
+        self.combo_rate_limit.addItem("5 MB/s", "5M")
+        self.combo_rate_limit.addItem("10 MB/s", "10M")
+        if current_r_idx >= 0:
+            self.combo_rate_limit.setCurrentIndex(current_r_idx)
+        else:
+            self.combo_rate_limit.setCurrentIndex(0)
+        self.combo_rate_limit.blockSignals(False)
+
+        self.chk_clipboard.setText(self.i18n.tr("chk_clipboard"))
+
         self.dev_label.setText(self.i18n.tr("developer_credit"))
         self.footer_donate_btn.setText(self.i18n.tr("donate_btn"))
-        self.status_bar.showMessage(f"{self.i18n.tr('status_ready')} | yt-dlp OK | FFmpeg OK")
+        self.github_btn.setText(self.i18n.tr("github_btn"))
+        if hasattr(self, "action_toggle_window"):
+            self.action_toggle_window.setText(self.i18n.tr("tray_show_hide"))
+        if hasattr(self, "action_quit"):
+            self.action_quit.setText(self.i18n.tr("tray_quit"))
+
+        disc_txt = self.i18n.tr("disclaimer_text")
+        if disc_txt == "disclaimer_text" or not disc_txt:
+            disc_txt = "⚠️ YASAL UYARI: Bu programla telif hakkı olan içerikler indirilemez ve bu amaçla kullanılamaz. Tüm kullanım sorumluluğu son kullanıcıya aittir."
+        self.disclaimer_label.setText(disc_txt)
 
         for widget in self.active_widgets.values():
+            widget.retranslate_ui()
+        for widget in self.completed_widgets.values():
             widget.retranslate_ui()
 
     def paste_from_clipboard(self):
@@ -334,8 +431,22 @@ class MainWindow(QMainWindow):
         if not url:
             return
 
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(self.i18n.tr("confirm_title"))
+        msg_box.setIcon(QMessageBox.Icon.Warning)
+        msg_box.setText(self.i18n.tr("confirm_msg"))
+        msg_box.setInformativeText(self.i18n.tr("disclaimer_text"))
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+        msg_box.setMinimumWidth(500)
+        reply = msg_box.exec()
+        if reply != QMessageBox.StandardButton.Yes:
+            self.status_bar.showMessage(self.i18n.tr("status_ready"))
+            return
+
         if self.chk_playlist.isChecked():
-            self.status_bar.showMessage("🔍 Oynatma Listesi Analiz Ediliyor...")
+            self._last_playlist_url = url
+            self.status_bar.showMessage(self.i18n.tr("analyzing_playlist"))
             task_id = str(uuid.uuid4())[:8]
 
             fetcher = PlaylistFetcher(task_id, url, self.paths.get_yt_dlp_path(), self)
@@ -366,22 +477,31 @@ class MainWindow(QMainWindow):
         self.url_input.clear()
 
     def on_playlist_fetched(self, task_id: str, items: list):
-        self.status_bar.showMessage(f"{self.i18n.tr('status_ready')} | yt-dlp OK | FFmpeg OK")
-        if task_id in self.fetchers:
-            del self.fetchers[task_id]
+        self.status_bar.showMessage(self.i18n.tr("status_ready"))
+        self.fetchers.pop(task_id, None)
 
         if not items:
-            QMessageBox.warning(self, "MstPull", "Oynatma listesinde video bulunamadı.")
+            reply = QMessageBox.question(
+                self, "MstPull",
+                self.i18n.tr("playlist_empty_single"),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self.chk_playlist.setChecked(False)
+                self.url_input.setText(getattr(self, "_last_playlist_url", ""))
+                self.add_to_queue()
             return
 
         dialog = PlaylistDialog(items, self.i18n, self)
         if dialog.exec() == PlaylistDialog.DialogCode.Accepted:
-            for item, is_audio in dialog.selected_items:
+            selected = getattr(dialog, "selected_items", None) or []
+            for item, is_audio in selected:
                 item_url = item.get("url")
                 sub_task_id = str(uuid.uuid4())[:8]
                 widget = DownloadItemWidget(sub_task_id, item_url, self.i18n)
                 widget.set_media_info(item.get("title", ""), item.get("duration", ""))
-                
+
                 widget.btn_dl_video.clicked.connect(lambda checked=False, tid=sub_task_id, u=item_url: self.start_single_download(tid, u, is_audio=False))
                 widget.btn_dl_audio.clicked.connect(lambda checked=False, tid=sub_task_id, u=item_url: self.start_single_download(tid, u, is_audio=True))
                 widget.btn_switch_mode.clicked.connect(lambda checked=False, tid=sub_task_id, u=item_url: self.switch_and_re_download(tid, u))
@@ -393,31 +513,42 @@ class MainWindow(QMainWindow):
                 self.start_single_download(sub_task_id, item_url, is_audio=is_audio)
 
     def on_playlist_error(self, task_id: str, err_msg: str):
-        self.status_bar.showMessage("❌ Oynatma listesi analiz edilemedi.")
-        QMessageBox.warning(self, "MstPull", "Oynatma listesi bilgileri alınamadı.")
-        if task_id in self.fetchers:
-            del self.fetchers[task_id]
+        self.status_bar.showMessage(self.i18n.tr("playlist_error_status"))
+        QMessageBox.warning(
+            self, "MstPull",
+            self.i18n.tr("playlist_error").format(err=err_msg[:200])
+        )
+        self.fetchers.pop(task_id, None)
 
     def on_info_fetched(self, task_id: str, info: dict):
         if task_id in self.active_widgets:
             widget = self.active_widgets[task_id]
             widget.set_media_info(info.get("title", ""), info.get("duration", ""))
-        if task_id in self.fetchers:
-            del self.fetchers[task_id]
+        self.fetchers.pop(task_id, None)
 
     def on_info_error(self, task_id: str, err_msg: str):
         if task_id in self.active_widgets:
             widget = self.active_widgets[task_id]
-            widget.set_media_info(widget.url[:35], "")
-        if task_id in self.fetchers:
-            del self.fetchers[task_id]
+            fallback_title = getattr(widget, "url", self.i18n.tr("unknown"))[:35]
+            widget.set_media_info(fallback_title, "")
+            widget.info_label.setText(
+                self.i18n.tr("info_error").format(err=err_msg[:80])
+            )
+        self.fetchers.pop(task_id, None)
 
     def start_single_download(self, task_id: str, url: str, is_audio: bool):
         if task_id not in self.active_widgets:
             return
 
         widget = self.active_widgets[task_id]
-        target_dir = self.paths.mp3_download_dir if is_audio else self.paths.video_download_dir
+        user_folder = self.folder_input.text().strip()
+        if user_folder and Path(user_folder).exists() and Path(user_folder) != self.paths.default_download_dir:
+            base_dir = Path(user_folder)
+            target_dir = base_dir / ("mp3" if is_audio else "video")
+        else:
+            target_dir = self.paths.mp3_download_dir if is_audio else self.paths.video_download_dir
+        target_dir.mkdir(parents=True, exist_ok=True)
+        widget.is_audio_mode = is_audio
         widget.start_download_ui(is_audio, target_dir)
 
         quality = self.combo_audio_qual.currentText() if is_audio else self.combo_video_qual.currentText()
@@ -436,15 +567,32 @@ class MainWindow(QMainWindow):
         self.queue_manager.add_task(worker)
 
     def switch_and_re_download(self, old_task_id: str, url: str):
-        if old_task_id in self.active_widgets:
-            old_widget = self.active_widgets[old_task_id]
-            new_is_audio = not old_widget.is_audio_mode
-            
-            self.url_input.setText(url)
-            self.add_to_queue()
-            
-            new_task_id = list(self.active_widgets.keys())[-1]
-            self.start_single_download(new_task_id, url, is_audio=new_is_audio)
+        if old_task_id not in self.active_widgets:
+            return
+        old_widget = self.active_widgets[old_task_id]
+        new_is_audio = not getattr(old_widget, "is_audio_mode", False)
+        old_title = getattr(old_widget, "raw_title", "")
+        old_duration = getattr(old_widget, "raw_duration", "")
+
+        # Eski widget'ı kuyruktan iptal et ve listeden kaldır
+        self.queue_manager.cancel_task(old_task_id)
+        self.scroll_layout.removeWidget(old_widget)
+        old_widget.deleteLater()
+        self.active_widgets.pop(old_task_id, None)
+
+        # Yeni widget oluştur ve doğrudan indirmeyi başlat (onay tekrar sorulmaz)
+        new_task_id = str(uuid.uuid4())[:8]
+        item = DownloadItemWidget(new_task_id, url, self.i18n)
+        item.set_media_info(old_title, old_duration)
+        item.btn_dl_video.clicked.connect(lambda: self.start_single_download(new_task_id, url, is_audio=False))
+        item.btn_dl_audio.clicked.connect(lambda: self.start_single_download(new_task_id, url, is_audio=True))
+        item.btn_switch_mode.clicked.connect(lambda: self.switch_and_re_download(new_task_id, url))
+        item.cancel_btn.clicked.connect(lambda: self.cancel_task(new_task_id))
+
+        self.active_widgets[new_task_id] = item
+        self.scroll_layout.addWidget(item)
+
+        self.start_single_download(new_task_id, url, is_audio=new_is_audio)
 
     def open_history_dialog(self):
         dialog = HistoryDialog(self.history_service, self.i18n, self)
@@ -452,13 +600,17 @@ class MainWindow(QMainWindow):
 
     def cancel_task(self, task_id: str):
         self.queue_manager.cancel_task(task_id)
-        if task_id in self.active_widgets:
-            widget = self.active_widgets[task_id]
-            widget.info_label.setText("❌ İptal Edildi")
+        widget = self.active_widgets.pop(task_id, None) or self.completed_widgets.pop(task_id, None)
+        if widget:
+            widget.info_label.setText(self.i18n.tr("cancelled"))
+            self.scroll_layout.removeWidget(widget)
+            widget.deleteLater()
 
     def on_task_progress(self, task_id: str, percent: float, speed: str, eta: str):
         if task_id in self.active_widgets:
             widget = self.active_widgets[task_id]
+            if getattr(widget, "is_completed", False):
+                return
             widget.update_progress(percent, speed, eta)
 
     def on_task_finished(self, task_id: str, success: bool, msg: str):
@@ -467,11 +619,26 @@ class MainWindow(QMainWindow):
             if success:
                 widget.mark_as_completed()
                 if not self.isVisible():
+                    raw_title = getattr(widget, "raw_title", "") or getattr(widget, "url", "")
                     self.tray_icon.showMessage(
-                        "✅ İndirme Tamamlandı!",
-                        f"Dosyanız indirildi: {widget.raw_title[:35]}...",
+                        self.i18n.tr("tray_download_done_title"),
+                        self.i18n.tr("tray_download_done_body").format(title=raw_title[:35] + "..."),
                         QSystemTrayIcon.MessageIcon.Information,
                         3000
                     )
             else:
                 widget.info_label.setText(f"❌ {msg}")
+                # Retry butonunu yeniden bağla (varsa)
+                if hasattr(widget, "retry_btn"):
+                    try:
+                        widget.retry_btn.clicked.disconnect()
+                    except TypeError:
+                        pass
+                    widget.retry_btn.clicked.connect(
+                        lambda checked=False, tid=task_id, u=widget.url, a=getattr(widget, "is_audio_mode", False):
+                            self.start_single_download(tid, u, is_audio=a)
+                    )
+                # Başarısız indirmelerde widget'ı aktif listede tut ki kullanıcı tekrar deneyebilsin
+                return
+            self.completed_widgets[task_id] = widget
+            self.active_widgets.pop(task_id, None)

@@ -1,0 +1,5 @@
+model: deepseek/deepseek-chat
+editor-model: deepseek/deepseek-chat
+auto-commits: false
+check-update: false
+git: false

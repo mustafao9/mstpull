@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import platform
 from pathlib import Path
 
@@ -60,11 +61,25 @@ class AppPaths:
         user_bin = self.user_bin_dir / binary_name
         if user_bin.exists():
             return user_bin
-        return self.platform_bin_dir / binary_name
+        platform_bin = self.platform_bin_dir / binary_name
+        if platform_bin.exists():
+            return platform_bin
+        # Sistem PATH'inde ara
+        system_path = shutil.which(binary_name)
+        if system_path:
+            return Path(system_path)
+        return platform_bin
 
     def get_ffmpeg_path(self) -> Path:
         binary_name = "ffmpeg.exe" if self.system == "windows" else "ffmpeg"
         user_bin = self.user_bin_dir / binary_name
         if user_bin.exists():
             return user_bin
-        return self.platform_bin_dir / binary_name
+        platform_bin = self.platform_bin_dir / binary_name
+        if platform_bin.exists():
+            return platform_bin
+        # Sistem PATH'inde ara
+        system_path = shutil.which(binary_name)
+        if system_path:
+            return Path(system_path)
+        return platform_bin

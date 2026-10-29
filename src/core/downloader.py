@@ -1,5 +1,6 @@
 import os
 import sys
+import signal
 import subprocess
 import json
 from pathlib import Path
@@ -19,7 +20,7 @@ class PlaylistFetcher(QThread):
     def run(self):
         cmd = [str(self.yt_dlp_path), "--flat-playlist", "--dump-single-json", self.url]
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             if res.returncode == 0:
                 data = json.loads(res.stdout)
                 entries = data.get("entries", [])
@@ -49,7 +50,7 @@ class MediaInfoFetcher(QThread):
     def run(self):
         cmd = [str(self.yt_dlp_path), "--dump-json", "--no-playlist", self.url]
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             if res.returncode == 0:
                 data = json.loads(res.stdout)
                 info = {
@@ -89,6 +90,14 @@ class DownloadWorker(QThread):
             self.finished.emit(self.task_id, False, f"Klasör Hatası: {str(e)}")
             return
 
+        # FFmpeg kontrolü (MP3 için kritik)
+        if self.is_audio and (not self.ffmpeg_path or not self.ffmpeg_path.exists()):
+            self.finished.emit(
+                self.task_id, False,
+                "FFmpeg bulunamadı! MP3 dönüşümü için FFmpeg gerekli. Lütfen kurun: sudo apt install ffmpeg"
+            )
+            return
+
         cmd = [
             str(self.yt_dlp_path), 
             "--newline", 
@@ -107,15 +116,17 @@ class DownloadWorker(QThread):
 
         if self.is_audio:
             cmd.extend([
-                "-x", 
+                "-x",
                 "--audio-format", "mp3",
-                "--embed-thumbnail",
-                "--add-metadata"
             ])
             if "320" in self.quality:
                 cmd.extend(["--audio-quality", "0"])
-            else:
+            elif "256" in self.quality:
+                cmd.extend(["--audio-quality", "2"])
+            elif "192" in self.quality:
                 cmd.extend(["--audio-quality", "4"])
+            else:
+                cmd.extend(["--audio-quality", "5"])
         else:
             if "1080" in self.quality:
                 cmd.extend(["-f", "bestvideo[height<=1080]+bestaudio/best"])
@@ -163,9 +174,18 @@ class DownloadWorker(QThread):
             if self._is_cancelled:
                 self.finished.emit(self.task_id, False, "İptal Edildi")
             elif self.process.returncode == 0:
+                # MP3 modunda dosyanın gerçekten oluştuğunu doğrula
+                if self.is_audio:
+                    mp3_files = list(self.target_dir.glob("*.mp3"))
+                    if not mp3_files:
+                        self.finished.emit(
+                            self.task_id, False,
+                            "MP3 dosyası oluşturulamadı. FFmpeg kurulu mu? (sudo apt install ffmpeg)"
+                        )
+                        return
                 self.finished.emit(self.task_id, True, "Tamamlandı")
             else:
-                self.finished.emit(self.task_id, False, "İndirme Hatası")
+                self.finished.emit(self.task_id, False, f"İndirme Hatası (kod: {self.process.returncode})")
 
         except Exception as e:
             self.finished.emit(self.task_id, False, str(e))
@@ -174,12 +194,14 @@ class DownloadWorker(QThread):
         if self.process:
             try:
                 if sys.platform != "win32":
-                    import signal
                     os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
                 else:
                     self.process.terminate()
             except Exception:
-                pass
+                try:
+                    self.process.terminate()
+                except Exception:
+                    pass
 
     def cancel(self):
         self._is_cancelled = True

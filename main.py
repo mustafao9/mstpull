@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.config.paths import AppPaths
 from src.utils.logging_config import setup_logging, get_logger
-from src.ui.i18n_manager import I18nManager
+from src.utils.i18n_manager import I18nManager
 from src.bootstrapper import Bootstrapper
 from src.ui.main_window import MainWindow
 

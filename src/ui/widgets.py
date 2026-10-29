@@ -80,10 +80,10 @@ class DownloadItemWidget(QFrame):
 
         self.btn_layout = QHBoxLayout()
         
-        self.btn_dl_video = QPushButton("🎬 Video İndir")
+        self.btn_dl_video = QPushButton(self.i18n.tr("mode_video"))
         self.btn_dl_video.setStyleSheet("background-color: #7aa2f7; color: #15161e; font-weight: bold;")
         
-        self.btn_dl_audio = QPushButton("🎵 Ses (MP3) İndir")
+        self.btn_dl_audio = QPushButton(self.i18n.tr("mode_audio"))
         self.btn_dl_audio.setStyleSheet("background-color: #bb9af7; color: #15161e; font-weight: bold;")
 
         self.btn_switch_mode = QPushButton()
@@ -135,12 +135,16 @@ class DownloadItemWidget(QFrame):
 
     def update_progress(self, percent: float, speed: str, eta: str):
         self.progress_bar.setValue(int(percent))
-        self.info_label.setText(f"%{percent:.1f} | Hız: {speed} | Kalan: {eta}")
+        if self.i18n.current_lang == "tr":
+            self.info_label.setText(f"%{percent:.1f} | Hız: {speed} | Kalan: {eta}")
+        else:
+            self.info_label.setText(f"%{percent:.1f} | Speed: {speed} | ETA: {eta}")
 
     def mark_as_completed(self):
         self.is_completed = True
         self.progress_bar.setValue(100)
-        self.info_label.setText(f"✅ {self.i18n.tr('status_ready')}")
+        done_text = "✅ İndirme Tamamlandı" if self.i18n.current_lang == "tr" else "✅ Download Complete"
+        self.info_label.setText(done_text)
         self.cancel_btn.setVisible(False)
         self.folder_btn.setVisible(True)
         self.donate_btn.setVisible(True)
@@ -148,9 +152,15 @@ class DownloadItemWidget(QFrame):
 
         # Mantıklı Buton Metni: Ses indiyse Video teklif et, Video indiyse Ses teklif et!
         if self.is_audio_mode:
-            self.btn_switch_mode.setText("🎬 Şimdi de Video Olarak İndir")
+            self.btn_switch_mode.setText(
+                "🎬 Şimdi de Video Olarak İndir" if self.i18n.current_lang == "tr"
+                else "🎬 Download as Video Now"
+            )
         else:
-            self.btn_switch_mode.setText("🎵 Şimdi de MP3 Olarak İndir")
+            self.btn_switch_mode.setText(
+                "🎵 Şimdi de MP3 Olarak İndir" if self.i18n.current_lang == "tr"
+                else "🎵 Download as MP3 Now"
+            )
         
         self.btn_switch_mode.setVisible(True)
 
@@ -159,6 +169,8 @@ class DownloadItemWidget(QFrame):
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.saved_target_dir)))
 
     def retranslate_ui(self):
+        self.btn_dl_video.setText(self.i18n.tr("mode_video"))
+        self.btn_dl_audio.setText(self.i18n.tr("mode_audio"))
         self.cancel_btn.setText(self.i18n.tr("cancel"))
         self.folder_btn.setText(self.i18n.tr("open_folder"))
         self.donate_btn.setText(self.i18n.tr("buy_me_coffee"))
