@@ -4,7 +4,7 @@ set -e
 echo "🚀 MstPull İkon Düzeltmeli Paketleme..."
 
 BUILD_DIR="build_out"
-DEB_DIR="$BUILD_DIR/deb/mstpull_1.0.0_amd64"
+DEB_DIR="$BUILD_DIR/deb/mstpull_1.0.1_amd64"
 
 rm -rf "$BUILD_DIR"
 mkdir -p "$DEB_DIR/DEBIAN"
@@ -49,12 +49,12 @@ DESKTOP
 
 cat << 'CONTROL' > "$DEB_DIR/DEBIAN/control"
 Package: mstpull
-Version: 1.0.0
+Version: 1.0.1
 Architecture: amd64
 Maintainer: Mustafa Satılmış <mustafao9>
 Description: MstPull Video & Audio Downloader for Linux
  IDM kalitesinde hızlı, eşzamanlı ve sistem tepsisi destekli indirme yöneticisi.
 CONTROL
 
-dpkg-deb --build "$DEB_DIR" "$BUILD_DIR/mstpull_1.0.0_amd64.deb"
+dpkg-deb --build "$DEB_DIR" "$BUILD_DIR/mstpull_1.0.1_amd64.deb"
 echo "✅ DEB paketi ikonlarla güncellendi."
