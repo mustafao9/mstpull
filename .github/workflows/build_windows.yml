@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Build Windows EXE & Installer
 
 on:
   push:
@@ -38,9 +38,16 @@ jobs:
         run: |
           pyinstaller --noconsole --onefile --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
 
-      - name: Create Release and Upload Asset
+      - name: Compile Inno Setup Installer
+        uses: IsmaelMartinez/actions-inno-setup-compiler@v1.2.2
+        with:
+          filepath: 'setup.iss'
+
+      - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/mstpull.exe
+          files: |
+            dist/mstpull.exe
+            Output/MstPull_Setup_*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
