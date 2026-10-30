@@ -40,9 +40,9 @@ jobs:
           pyinstaller --noconsole --onefile --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
 
       - name: Compile Inno Setup Installer
-        shell: cmd
+        shell: powershell
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
 
       - name: Create Release and Upload Assets (Windows)
         uses: softprops/action-gh-release@v2
