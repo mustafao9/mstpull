@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconsole --onefile --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
+          pyinstaller --noconsole --onefile --icon=icon.ico --add-data "icon.png:." --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
 
       - name: Compile Inno Setup Installer
         shell: powershell
@@ -80,7 +80,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconsole --onefile --name "mstpull" main.py
+          pyinstaller --noconsole --onefile --icon=icon.ico --add-data "icon.png:." --name "mstpull" main.py
 
       - name: Package .deb File
         run: |

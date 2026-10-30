@@ -1,4 +1,5 @@
 import sys
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.config.paths import AppPaths
 from src.utils.logging_config import setup_logging, get_logger

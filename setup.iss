@@ -1,4 +1,5 @@
 [Setup]
+SetupIconFile=icon.ico
 AppName=MstPull
 AppVersion=1.0.9
 DefaultDirName={autopf}\MstPull
