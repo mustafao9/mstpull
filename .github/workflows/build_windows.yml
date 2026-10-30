@@ -1,4 +1,4 @@
-name: Build Windows EXE & Installer
+name: Build Release Packages (Windows & Linux)
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 
 jobs:
   build-windows:
+    name: Build Windows EXE & Installer
     runs-on: windows-latest
     permissions:
       contents: write
@@ -43,11 +44,73 @@ jobs:
         with:
           filepath: 'setup.iss'
 
-      - name: Create Release and Upload Assets
+      - name: Create Release and Upload Assets (Windows)
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/mstpull.exe
             Output/MstPull_Setup_*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux-deb:
+    name: Build Linux .deb Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-pyqt6 ffmpeg build-essential devscripts debhelper
+
+      - name: Install Python Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller -r requirements.txt
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --noconsole --onefile --name "mstpull" main.py
+
+      - name: Package .deb File
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          DEB_DIR="mstpull_${VERSION}_amd64"
+          
+          mkdir -p ${DEB_DIR}/usr/bin
+          mkdir -p ${DEB_DIR}/usr/share/applications
+          mkdir -p ${DEB_DIR}/DEBIAN
+          
+          cp dist/mstpull ${DEB_DIR}/usr/bin/mstpull
+          chmod +x ${DEB_DIR}/usr/bin/mstpull
+          
+          cat << DEBCONTROL > ${DEB_DIR}/DEBIAN/control
+          Package: mstpull
+          Version: ${VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Depends: ffmpeg, python3-pyqt6
+          Maintainer: Mustafa Satılmış <contact@mustafao9.com>
+          Description: Modern media downloader application powered by yt-dlp and PyQt6.
+          DEBCONTROL
+          
+          dpkg-deb --build ${DEB_DIR}
+          mv ${DEB_DIR}.deb dist/
+
+      - name: Upload .deb to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
