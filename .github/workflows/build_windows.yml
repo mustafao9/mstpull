@@ -1,9 +1,10 @@
-name: Build Release Packages (Windows & Linux)
+python3 -c '
+content = """name: Build Release Packages (Windows & Linux)
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-windows:
@@ -19,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install Dependencies
         run: |
@@ -40,9 +41,9 @@ jobs:
           pyinstaller --noconsole --onefile --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
 
       - name: Compile Inno Setup Installer
-        uses: IsmaelMartinez/actions-inno-setup-compiler@v1.2.2
-        with:
-          filepath: 'setup.iss'
+        shell: powershell
+        run: |
+          & "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" setup.iss
 
       - name: Create Release and Upload Assets (Windows)
         uses: softprops/action-gh-release@v2
@@ -66,7 +67,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install System Dependencies
         run: |
@@ -114,3 +115,9 @@ jobs:
           files: dist/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+"""
+
+with open(".github/workflows/build_windows.yml", "w", encoding="utf-8") as f:
+    f.write(content)
+print("[✓] Workflow dosyası başarıyla güncellendi.")
+'
