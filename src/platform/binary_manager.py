@@ -1,6 +1,7 @@
 import os
 import sys
 import stat
+import time
 import urllib.request
 import subprocess
 from pathlib import Path
@@ -22,7 +23,6 @@ class BinaryManager:
     def ensure_executable_permission(self, file_path: Path) -> None:
         """Linux ve POSIX sistemlerde kullanıcı alanındaki dosyaya çalıştırma izni verir."""
         if self.system != "windows" and file_path.exists():
-            # Yalnızca yazma iznimiz olan kullanıcı/proje dizinlerindeki dosyalara chmod uygula
             try:
                 if os.access(file_path, os.W_OK):
                     current_permissions = file_path.stat().st_mode
@@ -85,13 +85,21 @@ class BinaryManager:
             return False, f"Çalıştırma hatası: {str(e)}"
 
     def download_yt_dlp(self, progress_callback=None) -> bool:
-        """yt-dlp bağımsız ikilisini resmi kaynaktan atomik olarak indirir."""
+        """yt-dlp bağımsız ikilisini resmi kaynaktan atomik olarak indirir ve WinError 32 hatalarını önler."""
         target_name = "yt-dlp.exe" if self.system == "windows" else "yt-dlp"
         target_path = self.paths.user_bin_dir / target_name
         temp_path = self.paths.user_bin_dir / f"{target_name}.tmp"
 
         download_url = self.YTDLP_OFFICIAL_URL_WIN if self.system == "windows" else self.YTDLP_OFFICIAL_URL_LINUX
         self.logger.info(f"yt-dlp indiriliyor: {download_url}")
+
+        # Windows ortamında kilitli yt-dlp sürecini temizleme denemesi
+        if self.system == "windows":
+            try:
+                subprocess.run(["taskkill", "/F", "/IM", "yt-dlp.exe"], capture_output=True)
+                time.sleep(0.3)
+            except Exception:
+                pass
 
         try:
             def _reporthook(blocknum, blocksize, totalsize):
@@ -100,16 +108,37 @@ class BinaryManager:
                     progress_callback(min(percent, 100))
 
             urllib.request.urlretrieve(download_url, temp_path, _reporthook if progress_callback else None)
-            
             self.ensure_executable_permission(temp_path)
-            if target_path.exists():
-                target_path.unlink()
-            temp_path.rename(target_path)
-            
+
+            # WinError 32 (Dosya kilitli) korumalı yer değiştirme
+            max_retries = 5
+            for attempt in range(max_retries):
+                try:
+                    if target_path.exists():
+                        target_path.unlink()
+                    temp_path.rename(target_path)
+                    break
+                except PermissionError as e:
+                    if attempt == max_retries - 1:
+                        self.logger.warning(f"yt-dlp dosyası kilitli, yer değiştirilemedi: {e}")
+                        # Hedef dosya zaten mevcutsa uygulamanın çökmesini engelle
+                        if target_path.exists():
+                            if temp_path.exists():
+                                try:
+                                    temp_path.unlink()
+                                except Exception:
+                                    pass
+                            return True
+                        raise e
+                    time.sleep(0.5)
+
             self.logger.info(f"yt-dlp başarıyla indirildi ve kaydedildi: {target_path}")
             return True
         except Exception as e:
             self.logger.error(f"yt-dlp indirme hatası: {str(e)}")
             if temp_path.exists():
-                temp_path.unlink()
+                try:
+                    temp_path.unlink()
+                except Exception:
+                    pass
             return False
