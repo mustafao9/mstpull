@@ -1,6 +1,6 @@
 ; MstPull - Dynamic & Legally Compliant Inno Setup Script
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.3"
+  #define MyAppVersion "1.1.4"
 #endif
 
 [Setup]
@@ -8,10 +8,10 @@ AppName=MstPull
 AppVersion={#MyAppVersion}
 DefaultDirName={autopf64}\MstPull
 DefaultGroupName=MstPull
-UninstallDisplayIcon={app}\mstpull.exe
+UninstallDisplayIcon={app}\MstPull.exe
 Compression=lzma2/ultra64
 SolidCompression=yes
-OutputDir=.
+OutputDir=build_out
 OutputBaseFilename=MstPull_Setup_v{#MyAppVersion}
 SetupIconFile=icon.ico
 ArchitecturesInstallIn64BitMode=x64
@@ -27,12 +27,14 @@ tr.WelcomeLabel2=Bu sihirbaz, MstPull Video ve MP3 İndirme uygulamasını bilgi
 en.WelcomeLabel2=This wizard will install MstPull Video and MP3 Downloader on your computer.%n%nKey Features & Configuration:%n- High-Speed Multi-Stream Download Engine%n- Lossless Audio Conversion with Embedded FFmpeg%n- Standard Windows System Directories (%APPDATA%\mstpull)%n- Direct Native 64-Bit Program Files Installation
 
 [Files]
-Source: "dist\mstpull.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\MstPull\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "locales\*"; DestDir: "{app}\locales"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icon.png"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\MstPull"; Filename: "{app}\mstpull.exe"; IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\MstPull"; Filename: "{app}\mstpull.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"
+Name: "{autoprograms}\MstPull"; Filename: "{app}\MstPull.exe"; IconFilename: "{app}\icon.ico"
+Name: "{autodesktop}\MstPull"; Filename: "{app}\MstPull.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
