@@ -1,6 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -35,13 +34,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
-    disable_windowed_traceback=False,
+    console=False,                      # Konsol penceresini kapalı tutar
+    disable_windowed_traceback=True,   # Hata durumunda siyah konsol penceresi açılmasını engeller
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico',
+    icon='icon.ico',                   # Exe içine gömülen ikon
 )
 coll = COLLECT(
     exe,
