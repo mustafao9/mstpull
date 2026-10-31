@@ -54,6 +54,7 @@ jobs:
         run: |
           mkdir -p release_assets
           Copy-Item "dist\MstPull_Portable_v*.exe" -Destination "release_assets\"
+          if (Test-Path "build_out\*.exe") { Copy-Item "build_out\*.exe" -Destination "release_assets\" }
           if (Test-Path "Output\*.exe") { Copy-Item "Output\*.exe" -Destination "release_assets\" }
           if (Test-Path "MstPull_Setup_*.exe") { Copy-Item "MstPull_Setup_*.exe" -Destination "release_assets\" }
 
