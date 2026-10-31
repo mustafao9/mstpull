@@ -1,4 +1,7 @@
 import sys
+import os
+import platform
+import subprocess
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.config.paths import AppPaths
@@ -7,12 +10,32 @@ from src.utils.i18n_manager import I18nManager
 from src.bootstrapper import Bootstrapper
 from src.ui.main_window import MainWindow
 
+def setup_windows_app_id():
+    """Windows görev çubuğunda uygulamanın kendi ikonunun doğru görünmesini sağlar."""
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            myappid = 'mustafao9.mstpull.downloader.1.1.4'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception:
+            pass
+
 def main():
+    # 0. Windows AppUserModelID ayarını etkinleştir
+    setup_windows_app_id()
+
     paths = AppPaths()
     logger = setup_logging(str(paths.logs_dir))
     logger.info("MstPull uygulaması başlatılıyor...")
 
     app = QApplication(sys.argv)
+
+    # Uygulama genel ikonu yükleme (Görev çubuğu ve pencere başlıkları için)
+    icon_path = paths.get_resource_path("icon.ico")
+    if not os.path.exists(icon_path):
+        icon_path = paths.get_resource_path("icon.png")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(str(icon_path)))
 
     # 1. Bootstrapper Bağımlılık Kontrolü
     bootstrapper = Bootstrapper(paths)
@@ -25,7 +48,7 @@ def main():
         )
         sys.exit(1)
 
-    # 2. i18n Dil Yöneticisi (Varsayılan Türkçe)
+    # 2. i18n Dil Yöneticisi
     i18n = I18nManager(paths.locales_dir, default_lang="tr")
 
     # 3. Ana Pencereyi Oluştur ve Göster
@@ -37,16 +60,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-    def open_appdata_dir(self):
-        """Uygulamanın AppData/Roaming/mstpull klasörünü sistem dosya yöneticisinde açar."""
-        import os, platform, subprocess
-        app_data = os.path.join(os.getenv('APPDATA', os.path.expanduser('~')), 'mstpull')
-        os.makedirs(app_data, exist_ok=True)
-        if platform.system() == "Windows":
-            os.startfile(app_data)
-        elif platform.system() == "Darwin":
-            subprocess.Popen(["open", app_data])
-        else:
-            subprocess.Popen(["xdg-open", app_data])
