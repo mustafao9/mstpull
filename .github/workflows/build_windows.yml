@@ -6,6 +6,7 @@ on:
       - 'v*'
 
 jobs:
+  # 1. WINDOWS DERLEMESİ (.exe Installer & Portable)
   build-windows:
     name: Build Windows EXE & Installer
     runs-on: windows-latest
@@ -35,7 +36,7 @@ jobs:
           $ffmpegExe = Get-ChildItem -Path "ffmpeg_extracted" -Filter "ffmpeg.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           Copy-Item $ffmpegExe -Destination "ffmpeg.exe"
 
-      - name: Build Executable with PyInstaller (Portable & Fixed Name for Setup)
+      - name: Build Executable with PyInstaller
         shell: powershell
         run: |
           $VERSION = "${{ github.ref_name }}".Replace("v", "")
@@ -48,7 +49,7 @@ jobs:
           $VERSION = "${{ github.ref_name }}".Replace("v", "")
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=$VERSION setup.iss
 
-      - name: Create Release and Upload Assets (Windows)
+      - name: Create Release and Upload Windows Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -57,6 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # 2. LINUX DERLEMESİ (.deb Package)
   build-linux-deb:
     name: Build Linux .deb Package
     runs-on: ubuntu-latest
@@ -88,33 +90,45 @@ jobs:
 
       - name: Package .deb File
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          DEB_DIR="mstpull_${VERSION}_amd64"
+          VERSION="${GITHUB_REF_NAME#v}"
+          DEB_NAME="mstpull_${VERSION}_amd64"
           
-          mkdir -p ${DEB_DIR}/usr/bin
-          mkdir -p ${DEB_DIR}/usr/share/applications
-          mkdir -p ${DEB_DIR}/DEBIAN
+          mkdir -p ${DEB_NAME}/usr/bin
+          mkdir -p ${DEB_NAME}/usr/share/applications
+          mkdir -p ${DEB_NAME}/usr/share/icons/hicolor/256x256/apps
+          mkdir -p ${DEB_NAME}/DEBIAN
           
-          cp dist/mstpull ${DEB_DIR}/usr/bin/mstpull
-          chmod +x ${DEB_DIR}/usr/bin/mstpull
+          cp dist/mstpull ${DEB_NAME}/usr/bin/mstpull
+          chmod +x ${DEB_NAME}/usr/bin/mstpull
+          cp icon.png ${DEB_NAME}/usr/share/icons/hicolor/256x256/apps/mstpull.png
           
-          cat << DEBCONTROL > ${DEB_DIR}/DEBIAN/control
+          cat << DEBCONTROL > ${DEB_NAME}/DEBIAN/control
           Package: mstpull
           Version: ${VERSION}
           Section: utils
           Priority: optional
           Architecture: amd64
-          Depends: ffmpeg, python3-pyqt6
+          Depends: ffmpeg
           Maintainer: Mustafa Satılmış <contact@mustafao9.com>
           Description: Modern media downloader application powered by yt-dlp and PyQt6.
           DEBCONTROL
           
-          dpkg-deb --build ${DEB_DIR}
-          mv ${DEB_DIR}.deb dist/
+          cat << DEBDESKTOP > ${DEB_NAME}/usr/share/applications/mstpull.desktop
+          [Desktop Entry]
+          Name=MstPull
+          Comment=Video and Audio Downloader
+          Exec=/usr/bin/mstpull
+          Icon=mstpull
+          Terminal=false
+          Type=Application
+          Categories=Utility;Network;
+          DEBDESKTOP
+
+          dpkg-deb --build ${DEB_NAME}
 
       - name: Upload .deb to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.deb
+          files: mstpull_*_amd64.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
