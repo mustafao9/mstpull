@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -77,40 +78,77 @@ class I18nManager(QObject):
         self.logger = get_logger()
         self.translations = dict(TR_MAP)
 
-        # Önce parametre olarak gelen yolu kullan
+        # PyInstaller Runtime ve Yerel Ortam Yolları
+        base_meipass = getattr(sys, '_MEIPASS', None)
+        
+        possible_paths = []
         if locales_dir and Path(locales_dir).exists():
-            self.locales_dir = Path(locales_dir)
-        else:
-            # Fallback: sırayla dene
-            possible_paths = [
-                Path(__file__).resolve().parent.parent.parent / "locales",
-                Path(__file__).resolve().parent.parent.parent / "assets" / "locales",
-                Path("/usr/share/mstpull/locales"),
-                Path("/usr/share/mstpull/assets/locales"),
-            ]
-            self.locales_dir = None
-            for p in possible_paths:
-                if p.exists():
-                    self.locales_dir = p
-                    break
+            possible_paths.append(Path(locales_dir))
+        
+        if base_meipass:
+            possible_paths.extend([
+                Path(base_meipass) / "locales",
+                Path(base_meipass) / "assets" / "locales",
+            ])
+
+        possible_paths.extend([
+            Path(__file__).resolve().parent.parent.parent / "locales",
+            Path(__file__).resolve().parent.parent.parent / "assets" / "locales",
+            Path("/usr/share/mstpull/locales"),
+            Path("/usr/share/mstpull/assets/locales"),
+        ])
+
+        self.locales_dir = None
+        for p in possible_paths:
+            if p and p.exists():
+                self.locales_dir = p
+                break
 
         self.load_translations()
 
+    def _normalize_lang_code(self, lang_code: str) -> str:
+        """en_GB, GB EN, en-US gibi ifadeleri düz standart dil koduna dönüştürür."""
+        code = str(lang_code).lower().strip()
+        if "en" in code or "gb" in code:
+            return "en"
+        if "tr" in code:
+            return "tr"
+        return code
+
     def load_translations(self):
+        norm_lang = self._normalize_lang_code(self.current_lang)
+        
+        if norm_lang == "tr":
+            self.translations = dict(TR_MAP)
+            return
+
         if self.locales_dir and self.locales_dir.exists():
-            file_path = self.locales_dir / f"{self.current_lang}.json"
-            if file_path.exists():
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                        self.translations.update(data)
-                except Exception as e:
-                    self.logger.error(f"Dil dosyası yüklenemedi: {e}")
+            # Sırasıyla en.json, en_GB.json dene
+            possible_files = [
+                self.locales_dir / f"{norm_lang}.json",
+                self.locales_dir / f"{self.current_lang}.json",
+                self.locales_dir / "en.json"
+            ]
+            
+            loaded = False
+            for file_path in possible_files:
+                if file_path.exists():
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            self.translations = data  # Çevirileri direkt JSON'dan al
+                            loaded = True
+                            break
+                    except Exception as e:
+                        if self.logger:
+                            self.logger.error(f"Dil dosyası okunurken hata oluştu ({file_path}): {e}")
+
+            if not loaded and self.logger:
+                self.logger.warning(f"Dil dosyası bulunamadı, TR varsayılanlarına geçiliyor: {self.current_lang}")
 
     def set_language(self, lang_code: str):
         if self.current_lang != lang_code:
             self.current_lang = lang_code
-            self.translations = dict(TR_MAP)
             self.load_translations()
             self.language_changed.emit()
 
