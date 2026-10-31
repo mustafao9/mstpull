@@ -2,6 +2,7 @@ import sys
 import os
 import platform
 import subprocess
+from pathlib import Path
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.config.paths import AppPaths
@@ -20,15 +21,20 @@ def setup_windows_app_id():
         except Exception:
             pass
 
-def get_icon_path(paths):
+def get_icon_path():
     """PyInstaller ve yerel geliştirme ortamıyla %100 uyumlu ikon yolu döndürür."""
-    base_path = getattr(sys, '_MEIPASS', str(paths.base_dir))
-    ico = os.path.join(base_path, "icon.ico")
-    png = os.path.join(base_path, "icon.png")
-    if os.path.exists(ico):
-        return ico
-    elif os.path.exists(png):
-        return png
+    if hasattr(sys, '_MEIPASS'):
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).resolve().parent
+
+    ico = base_path / "icon.ico"
+    png = base_path / "icon.png"
+
+    if ico.exists():
+        return str(ico)
+    elif png.exists():
+        return str(png)
     return None
 
 def main():
@@ -42,7 +48,7 @@ def main():
     app = QApplication(sys.argv)
 
     # Uygulama genel ikonunu güvenli yoldan yükleme
-    icon_path = get_icon_path(paths)
+    icon_path = get_icon_path()
     if icon_path and os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))
 
