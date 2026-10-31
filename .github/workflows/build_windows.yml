@@ -49,12 +49,18 @@ jobs:
           $VERSION = "${{ github.ref_name }}".Replace("v", "")
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=$VERSION setup.iss
 
+      - name: Prepare Windows Release Assets
+        shell: powershell
+        run: |
+          mkdir -p win_release
+          Copy-Item "dist\MstPull_Portable_v*.exe" -Destination "win_release\"
+          Get-ChildItem -Path . -Filter "*.exe" | Where-Object { $_.Name -notlike "ffmpeg.exe" -and $_.Name -notlike "MstPull_Portable_*" } | Copy-Item -Destination "win_release\"
+          if (Test-Path "Output\*.exe") { Copy-Item "Output\*.exe" -Destination "win_release\" }
+
       - name: Create Release and Upload Windows Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/MstPull_Portable_v*.exe
-            MstPull_Setup_*.exe
+          files: win_release/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
