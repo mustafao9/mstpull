@@ -1,11 +1,21 @@
+# PyInstaller & Derleme Klasörleri
+build/
+dist/
+*.spec
+
+# Log ve Geçici Dosyalar
+logs/
+logging
+*.log
+os/
+sys/
+
+# Python Cache
 __pycache__/
-*.py[cod]
+*.pyc
+
+# IDE & Ortam Dosyaları
 .venv/
-build_out/
-*.deb
+venv/
 .vscode/
 .idea/
-*.log
-
-# Aider files
-.aider*
