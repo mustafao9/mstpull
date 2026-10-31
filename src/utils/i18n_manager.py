@@ -123,7 +123,6 @@ class I18nManager(QObject):
             return
 
         if self.locales_dir and self.locales_dir.exists():
-            # Sırasıyla en.json, en_GB.json dene
             possible_files = [
                 self.locales_dir / f"{norm_lang}.json",
                 self.locales_dir / f"{self.current_lang}.json",
@@ -136,7 +135,7 @@ class I18nManager(QObject):
                     try:
                         with open(file_path, "r", encoding="utf-8") as f:
                             data = json.load(f)
-                            self.translations = data  # Çevirileri direkt JSON'dan al
+                            self.translations = data
                             loaded = True
                             break
                     except Exception as e:
