@@ -20,6 +20,17 @@ def setup_windows_app_id():
         except Exception:
             pass
 
+def get_icon_path(paths):
+    """PyInstaller ve yerel geliştirme ortamıyla %100 uyumlu ikon yolu döndürür."""
+    base_path = getattr(sys, '_MEIPASS', str(paths.base_dir))
+    ico = os.path.join(base_path, "icon.ico")
+    png = os.path.join(base_path, "icon.png")
+    if os.path.exists(ico):
+        return ico
+    elif os.path.exists(png):
+        return png
+    return None
+
 def main():
     # 0. Windows AppUserModelID ayarını etkinleştir
     setup_windows_app_id()
@@ -30,12 +41,10 @@ def main():
 
     app = QApplication(sys.argv)
 
-    # Uygulama genel ikonu yükleme (Görev çubuğu ve pencere başlıkları için)
-    icon_path = paths.get_resource_path("icon.ico")
-    if not os.path.exists(icon_path):
-        icon_path = paths.get_resource_path("icon.png")
-    if os.path.exists(icon_path):
-        app.setWindowIcon(QIcon(str(icon_path)))
+    # Uygulama genel ikonunu güvenli yoldan yükleme
+    icon_path = get_icon_path(paths)
+    if icon_path and os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
 
     # 1. Bootstrapper Bağımlılık Kontrolü
     bootstrapper = Bootstrapper(paths)
