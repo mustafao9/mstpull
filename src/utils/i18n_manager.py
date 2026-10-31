@@ -78,7 +78,6 @@ class I18nManager(QObject):
         self.logger = get_logger()
         self.translations = dict(TR_MAP)
 
-        # PyInstaller Runtime ve Yerel Ortam Yolları
         base_meipass = getattr(sys, '_MEIPASS', None)
         
         possible_paths = []
@@ -107,7 +106,6 @@ class I18nManager(QObject):
         self.load_translations()
 
     def _normalize_lang_code(self, lang_code: str) -> str:
-        """en_GB, GB EN, en-US gibi ifadeleri düz standart dil koduna dönüştürür."""
         code = str(lang_code).lower().strip()
         if "en" in code or "gb" in code:
             return "en"
