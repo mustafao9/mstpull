@@ -1,0 +1,17 @@
+MstPull - Terms of Service, Privacy Policy & Legal Notice
+
+1. OVERVIEW
+MstPull is a desktop media downloading and conversion utility built using open-source technologies (yt-dlp, FFmpeg) and the PyQt6 framework.
+
+2. PRIVACY & INTERNATIONAL DATA TRANSFER (GDPR / PRIVACY LAWS)
+- MstPull does not collect, store, or transmit any personal data (such as names, emails, or user identities) to its own servers.
+- IP Address Notice: During media downloads and component updates, your IP address is transmitted to third-party content hosting servers (e.g., YouTube) as required by network protocols.
+
+3. COPYRIGHT & LEGAL RESPONSIBILITY
+MstPull operates strictly as a downloading client. The responsibility for copyright compliance, licensing, and usage permissions of downloaded content rests entirely with the end user.
+
+4. DISCLAIMER OF WARRANTY
+The software is provided "as-is". The developer is not liable for service disruptions caused by changes in third-party platforms.
+
+5. UNINSTALLATION
+You can completely remove the application at any time via Windows Control Panel / Add or Remove Programs.

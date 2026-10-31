@@ -35,21 +35,25 @@ jobs:
           $ffmpegExe = Get-ChildItem -Path "ffmpeg_extracted" -Filter "ffmpeg.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           Copy-Item $ffmpegExe -Destination "ffmpeg.exe"
 
-      - name: Build Executable with PyInstaller
+      - name: Build Executable with PyInstaller (Portable & Fixed Name for Setup)
+        shell: powershell
         run: |
-          pyinstaller --noconsole --onefile --icon=icon.ico --add-data "icon.png:." --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
+          $VERSION = "${{ github.ref_name }}".Replace("v", "")
+          pyinstaller --noconsole --onefile --icon=icon.ico --add-data "icon.png;." --hidden-import=PyQt6 --hidden-import=PyQt6.QtCore --hidden-import=PyQt6.QtWidgets --hidden-import=PyQt6.QtGui --add-binary "ffmpeg.exe;." --name "mstpull" main.py
+          Copy-Item "dist\mstpull.exe" -Destination "dist\MstPull_Portable_v$VERSION.exe"
 
       - name: Compile Inno Setup Installer
         shell: powershell
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+          $VERSION = "${{ github.ref_name }}".Replace("v", "")
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=$VERSION setup.iss
 
       - name: Create Release and Upload Assets (Windows)
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/mstpull.exe
-            Output/MstPull_Setup_*.exe
+            dist/MstPull_Portable_v*.exe
+            MstPull_Setup_*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

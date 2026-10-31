@@ -1,0 +1,17 @@
+MstPull - Kullanım Koşulları, KVKK Aydınlatma Metni ve Yasal Uyarı
+
+1. BİLGİLENDİRME VE KAPSAM
+MstPull, açık kaynaklı teknolojiler (yt-dlp, FFmpeg) ve PyQt6 mimarisi kullanılarak geliştirilmiş bir masaüstü medya indirme ve dönüştürme aracıdır.
+
+2. KİŞİSEL VERİLERİN KORUNMASI VE YURT DIŞI AKTARIMI (KVKK / GDPR)
+- MstPull uygulaması ad, soyad, e-posta veya herhangi bir kişisel verinizi toplamaz, kaydetmez ve kendi sunucularına aktarmaz.
+- IP Adresi Bilgilendirmesi: Medya içeriklerinin indirilmesi ve uygulama bileşenlerinin güncellenmesi sırasında, cihazınızın IP adresi medya içeriğinin barındırıldığı sunuculara (YouTube vb. yurt dışı menşeli servisler) zorunlu ağ protokolleri gereği iletilmektedir.
+
+3. TELİF HAKLARI VE YASAL SORUMLULUK UYARISI
+MstPull yalnızca bir indirme istemcisidir. İndirilen materyallerin telif hakları, kullanım izinleri ve telif yasalarına uygunluğu tamamen son kullanıcının sorumluluğundadır. Telif hakkı ile korunan içeriklerin izinsiz indirilmesinden doğabilecek hukuki sorumluluklar kullanıcıya aittir.
+
+4. YAZILIM GARANTİSİ VE SORUMLULUK REDDİ
+Yazılım "olduğu gibi" sunulmaktadır. Üçüncü taraf servislerde (YouTube API vb.) yaşanabilecek altyapı değişikliklerinden kaynaklı aksaklıklardan geliştirici sorumlu tutulamaz.
+
+5. KALDIRMA VE VERİ TEMİZLİĞİ
+Uygulamayı dilediğiniz zaman Denetim Masası / Program Ekle-Kaldır üzerinden bilgisayarınızdan tamamen kaldırabilirsiniz.
