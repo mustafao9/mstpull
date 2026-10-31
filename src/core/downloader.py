@@ -90,11 +90,10 @@ class DownloadWorker(QThread):
             self.finished.emit(self.task_id, False, f"Klasör Hatası: {str(e)}")
             return
 
-        # FFmpeg kontrolü (MP3 için kritik)
         if self.is_audio and (not self.ffmpeg_path or not self.ffmpeg_path.exists()):
             self.finished.emit(
                 self.task_id, False,
-                "FFmpeg bulunamadı! MP3 dönüşümü için FFmpeg gerekli. Lütfen kurun: sudo apt install ffmpeg"
+                "FFmpeg bulunamadı! MP3 dönüşümü için FFmpeg gereklidir."
             )
             return
 
@@ -140,47 +139,60 @@ class DownloadWorker(QThread):
         cmd.append(self.url)
 
         try:
+            # Windows ve Linux için süreç oluşturma
+            creation_flags = 0
+            if sys.platform == "win32":
+                creation_flags = subprocess.CREATE_NO_WINDOW
+
             self.process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
+                creationflags=creation_flags,
                 preexec_fn=os.setsid if sys.platform != "win32" else None
             )
 
-            for line in iter(self.process.stdout.readline, ''):
+            while True:
                 if self._is_cancelled:
                     self._safe_kill_process()
                     self.finished.emit(self.task_id, False, "İptal Edildi")
                     return
 
-                line_str = line.strip()
-                if "[download]" in line_str and "%" in line_str:
-                    try:
-                        parts = line_str.split()
-                        for i, part in enumerate(parts):
-                            if "%" in part:
-                                pct_str = part.replace("%", "")
-                                percent = float(pct_str)
-                                speed = parts[i+2] if i+2 < len(parts) else "N/A"
-                                eta = parts[i+4] if i+4 < len(parts) else "N/A"
-                                self.progress.emit(self.task_id, percent, speed, eta)
-                                break
-                    except Exception:
-                        pass
+                line = self.process.stdout.readline()
+                if not line and self.process.poll() is not None:
+                    break
 
+                if line:
+                    line_str = line.strip()
+                    if "[download]" in line_str and "%" in line_str:
+                        try:
+                            parts = line_str.split()
+                            for i, part in enumerate(parts):
+                                if "%" in part:
+                                    pct_str = part.replace("%", "")
+                                    percent = float(pct_str)
+                                    speed = parts[i+2] if i+2 < len(parts) else "N/A"
+                                    eta = parts[i+4] if i+4 < len(parts) else "N/A"
+                                    self.progress.emit(self.task_id, percent, speed, eta)
+                                    break
+                        except Exception:
+                            pass
+
+            if self.process.stdout:
+                self.process.stdout.close()
             self.process.wait()
+
             if self._is_cancelled:
                 self.finished.emit(self.task_id, False, "İptal Edildi")
             elif self.process.returncode == 0:
-                # MP3 modunda dosyanın gerçekten oluştuğunu doğrula
                 if self.is_audio:
                     mp3_files = list(self.target_dir.glob("*.mp3"))
                     if not mp3_files:
                         self.finished.emit(
                             self.task_id, False,
-                            "MP3 dosyası oluşturulamadı. FFmpeg kurulu mu? (sudo apt install ffmpeg)"
+                            "MP3 dosyası oluşturulamadı. FFmpeg kontrol edin."
                         )
                         return
                 self.finished.emit(self.task_id, True, "Tamamlandı")
@@ -193,10 +205,15 @@ class DownloadWorker(QThread):
     def _safe_kill_process(self):
         if self.process:
             try:
-                if sys.platform != "win32":
-                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+                if sys.platform == "win32":
+                    # Windows'ta alt FFmpeg/yt-dlp süreç ağacını tamamen sonlandır
+                    subprocess.run(
+                        ["taskkill", "/F", "/T", "/PID", str(self.process.pid)],
+                        capture_output=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
                 else:
-                    self.process.terminate()
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
             except Exception:
                 try:
                     self.process.terminate()

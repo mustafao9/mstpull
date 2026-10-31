@@ -34,7 +34,6 @@ class MainWindow(QMainWindow):
         self.queue_manager.task_progress.connect(self.on_task_progress)
         self.queue_manager.task_finished.connect(self.on_task_finished)
 
-        
         self.resize(1050, 680)
         icon_path = self.paths.assets_dir / "icons" / "app.png"
         if not icon_path.exists():
@@ -301,7 +300,6 @@ class MainWindow(QMainWindow):
         self.clipboard_monitor.is_enabled = checked
 
     def on_clipboard_url_detected(self, url: str):
-        # Kullanıcı zaten bir şey yazıyorsa ezme
         if self.url_input.text().strip():
             return
         self.url_input.setText(url)
@@ -460,10 +458,10 @@ class MainWindow(QMainWindow):
         task_id = str(uuid.uuid4())[:8]
         item = DownloadItemWidget(task_id, url, self.i18n)
         
-        item.btn_dl_video.clicked.connect(lambda: self.start_single_download(task_id, url, is_audio=False))
-        item.btn_dl_audio.clicked.connect(lambda: self.start_single_download(task_id, url, is_audio=True))
-        item.btn_switch_mode.clicked.connect(lambda: self.switch_and_re_download(task_id, url))
-        item.cancel_btn.clicked.connect(lambda: self.cancel_task(task_id))
+        item.btn_dl_video.clicked.connect(lambda checked=False, tid=task_id, u=url: self.start_single_download(tid, u, is_audio=False))
+        item.btn_dl_audio.clicked.connect(lambda checked=False, tid=task_id, u=url: self.start_single_download(tid, u, is_audio=True))
+        item.btn_switch_mode.clicked.connect(lambda checked=False, tid=task_id, u=url: self.switch_and_re_download(tid, u))
+        item.cancel_btn.clicked.connect(lambda checked=False, tid=task_id: self.cancel_task(tid))
         
         self.active_widgets[task_id] = item
         self.scroll_layout.addWidget(item)
@@ -537,8 +535,12 @@ class MainWindow(QMainWindow):
         self.fetchers.pop(task_id, None)
 
     def start_single_download(self, task_id: str, url: str, is_audio: bool):
+        # Tamamlanan listede ise tekrar aktif listeye al
         if task_id not in self.active_widgets:
-            return
+            if task_id in self.completed_widgets:
+                self.active_widgets[task_id] = self.completed_widgets.pop(task_id)
+            else:
+                return
 
         widget = self.active_widgets[task_id]
         user_folder = self.folder_input.text().strip()
@@ -567,27 +569,28 @@ class MainWindow(QMainWindow):
         self.queue_manager.add_task(worker)
 
     def switch_and_re_download(self, old_task_id: str, url: str):
-        if old_task_id not in self.active_widgets:
+        old_widget = self.active_widgets.get(old_task_id) or self.completed_widgets.get(old_task_id)
+        if not old_widget:
             return
-        old_widget = self.active_widgets[old_task_id]
+
         new_is_audio = not getattr(old_widget, "is_audio_mode", False)
         old_title = getattr(old_widget, "raw_title", "")
         old_duration = getattr(old_widget, "raw_duration", "")
 
-        # Eski widget'ı kuyruktan iptal et ve listeden kaldır
         self.queue_manager.cancel_task(old_task_id)
         self.scroll_layout.removeWidget(old_widget)
         old_widget.deleteLater()
         self.active_widgets.pop(old_task_id, None)
+        self.completed_widgets.pop(old_task_id, None)
 
-        # Yeni widget oluştur ve doğrudan indirmeyi başlat (onay tekrar sorulmaz)
         new_task_id = str(uuid.uuid4())[:8]
         item = DownloadItemWidget(new_task_id, url, self.i18n)
         item.set_media_info(old_title, old_duration)
-        item.btn_dl_video.clicked.connect(lambda: self.start_single_download(new_task_id, url, is_audio=False))
-        item.btn_dl_audio.clicked.connect(lambda: self.start_single_download(new_task_id, url, is_audio=True))
-        item.btn_switch_mode.clicked.connect(lambda: self.switch_and_re_download(new_task_id, url))
-        item.cancel_btn.clicked.connect(lambda: self.cancel_task(new_task_id))
+        
+        item.btn_dl_video.clicked.connect(lambda checked=False, tid=new_task_id, u=url: self.start_single_download(tid, u, is_audio=False))
+        item.btn_dl_audio.clicked.connect(lambda checked=False, tid=new_task_id, u=url: self.start_single_download(tid, u, is_audio=True))
+        item.btn_switch_mode.clicked.connect(lambda checked=False, tid=new_task_id, u=url: self.switch_and_re_download(tid, u))
+        item.cancel_btn.clicked.connect(lambda checked=False, tid=new_task_id: self.cancel_task(tid))
 
         self.active_widgets[new_task_id] = item
         self.scroll_layout.addWidget(item)
@@ -628,7 +631,6 @@ class MainWindow(QMainWindow):
                     )
             else:
                 widget.info_label.setText(f"❌ {msg}")
-                # Retry butonunu yeniden bağla (varsa)
                 if hasattr(widget, "retry_btn"):
                     try:
                         widget.retry_btn.clicked.disconnect()
@@ -638,7 +640,6 @@ class MainWindow(QMainWindow):
                         lambda checked=False, tid=task_id, u=widget.url, a=getattr(widget, "is_audio_mode", False):
                             self.start_single_download(tid, u, is_audio=a)
                     )
-                # Başarısız indirmelerde widget'ı aktif listede tut ki kullanıcı tekrar deneyebilsin
                 return
             self.completed_widgets[task_id] = widget
             self.active_widgets.pop(task_id, None)

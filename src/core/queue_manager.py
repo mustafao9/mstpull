@@ -36,11 +36,10 @@ class QueueManager(QObject):
 
     def cancel_task(self, task_id: str):
         if task_id in self.active_workers:
-            worker = self.active_workers[task_id]
-            worker.cancel()
-            del self.active_workers[task_id]
+            worker = self.active_workers.get(task_id)
+            if worker:
+                worker.cancel()
             self.logger.info(f"Aktif görev iptal edildi: {task_id}")
-            self.process_queue()
         else:
             self.pending_queue = deque([w for w in self.pending_queue if w.task_id != task_id])
 
@@ -48,7 +47,16 @@ class QueueManager(QObject):
         self.task_progress.emit(task_id, percent, speed, eta)
 
     def _on_finished(self, task_id: str, success: bool, msg: str):
-        if task_id in self.active_workers:
-            del self.active_workers[task_id]
+        worker = self.active_workers.pop(task_id, None)
+        if worker:
+            try:
+                worker.progress.disconnect(self._on_progress)
+                worker.finished.disconnect(self._on_finished)
+            except Exception:
+                pass
+            worker.quit()
+            worker.wait(1000)
+            worker.deleteLater()
+
         self.task_finished.emit(task_id, success, msg)
         self.process_queue()

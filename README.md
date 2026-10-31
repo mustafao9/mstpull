@@ -4,27 +4,20 @@ MstPull, Python, PyQt6 ve yt-dlp altyapısı kullanılarak geliştirilmiş, mode
 
 ---
 
-## 📥 İndirme Seçenekleri (Windows)
+## 📥 İndirme ve Kurulum Seçenekleri
 
-Son sürümü [GitHub Releases](https://github.com/mustafao9/mstpull/releases/latest) sayfasından indirebilirsiniz:
+Son sürümlere [GitHub Releases](https://github.com/mustafao9/mstpull/releases/latest) sayfasından ulaşabilirsiniz.
 
-| Kurulum Tipi | Dosya Adı | Açıklama |
-| :--- | :--- | :--- |
-| **Kurulum Sihirbazı (Önerilen)** | `MstPull_Setup_v1.0.7.exe` | Masaüstü ve Başlat menüsü kısayollarını oluşturur, Program Ekle/Kaldır entegrasyonu sunar. |
-| **Taşınabilir (Portable)** | `mstpull.exe` | Kurulum gerektirmeden doğrudan çalışır, USB bellekler için idealdir. |
+### 🐧 Linux (Debian / Ubuntu / Linux Mint)
 
----
+Paketi indirip terminal üzerinden yüklemek için:
 
-## 🛠️ Kurulum ve Kullanım
+```bash
+# 1. .deb paketini indirin (v1.0.8 sürümü)
+wget [https://github.com/mustafao9/mstpull/releases/download/v1.0.8/mstpull_1.0.8_amd64.deb](https://github.com/mustafao9/mstpull/releases/download/v1.0.8/mstpull_1.0.8_amd64.deb)
 
-### Windows
-1. **Kurulum Sihirbazı ile:** `MstPull_Setup_v1.0.7.exe` dosyasını çalıştırıp ekran adımlarını takip edin.
-2. **Taşınabilir Sürüm:** `mstpull.exe` dosyasını indirip doğrudan çift tıklayarak çalıştırın.
+# 2. dpkg ile kurulumu yapın
+sudo dpkg -i mstpull_1.0.8_amd64.deb
 
-> 💡 **Not:** Uygulama ilk açılışında gerekli yardımcı bileşenleri (`yt-dlp` güncellemeleri) arka planda otomatik olarak yapılandırır. Ayarlar ekranından `AppData/Roaming/mstpull` veri klasörüne tek tıkla erişebilirsiniz.
-
----
-
-## 📜 Lisans
-
-Bu proje **GNU General Public License v3.0 (GPLv3)** ile lisanslanmıştır. Detaylar için [`LICENSE`](LICENSE) dosyasına göz atabilirsiniz.
+# 3. Bağımlılık eksikleri varsa otomatik tamamlayın
+sudo apt-get install -f
