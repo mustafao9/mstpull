@@ -1,4 +1,5 @@
 # MstPull 🚀
+<img width="1053" height="711" alt="mstpull-ekran-goruntu-linux-en" src="https://github.com/user-attachments/assets/f241c1cb-5496-4e87-8f9b-71d13c0d1790" />
 
 MstPull, Python, PyQt6 ve yt-dlp altyapısı kullanılarak geliştirilmiş, modern ve kullanıcı dostu bir medya indirme uygulamasıdır.
 
