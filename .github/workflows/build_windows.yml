@@ -116,7 +116,7 @@ jobs:
           Priority: optional
           Architecture: amd64
           Depends: ffmpeg
-          Maintainer: Mustafa Satılmış <contact@mustafao9.com>
+          Maintainer: Mustafa Satılmış <satilmisenator@gmail.com>
           Description: Modern media downloader application powered by yt-dlp and PyQt6.
           DEBCONTROL
           
