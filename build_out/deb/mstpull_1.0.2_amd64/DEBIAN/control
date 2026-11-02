@@ -1,0 +1,6 @@
+Package: mstpull
+Version: 1.0.2
+Architecture: amd64
+Maintainer: Mustafa Satılmış <mustafao9>
+Description: MstPull Video & Audio Downloader for Linux
+ IDM kalitesinde hızlı, eşzamanlı ve sistem tepsisi destekli indirme yöneticisi.

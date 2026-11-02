@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=MstPull
+Comment=Profesyonel Linux Video ve Ses İndirme Yöneticisi
+Exec=/usr/bin/mstpull
+Icon=mstpull
+Terminal=false
+Type=Application
+Categories=Network;AudioVideo;
+StartupWMClass=mstpull
+Keywords=download;youtube;mp3;video;mstpull;

@@ -1,6 +1,6 @@
 ; MstPull - Dynamic & Legally Compliant Inno Setup Script
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.4"
+  #define MyAppVersion "1.0.1"
 #endif
 
 [Setup]
@@ -26,8 +26,7 @@ tr.WelcomeLabel2=Bu sihirbaz, MstPull Video ve MP3 İndirme uygulamasını bilgi
 en.WelcomeLabel2=This wizard will install MstPull Video and MP3 Downloader on your computer.%n%nKey Features & Configuration:%n- High-Speed Multi-Stream Download Engine%n- Lossless Audio Conversion with Embedded FFmpeg%n- Standard Windows System Directories (%APPDATA%\mstpull)%n- Direct Native 64-Bit Program Files Installation
 
 [Files]
-Source: "dist\MstPull\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "dist\mstpull.exe"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "dist\mstpull.exe"; DestDir: "{app}"; DestName: "MstPull.exe"; Flags: ignoreversion
 Source: "locales\*"; DestDir: "{app}\locales"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "icon.png"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
