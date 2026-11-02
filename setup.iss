@@ -1,6 +1,6 @@
 ; MstPull - Dynamic & Legally Compliant Inno Setup Script
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0.1"
+  #define MyAppVersion "1.0.5"
 #endif
 
 [Setup]
@@ -27,6 +27,7 @@ en.WelcomeLabel2=This wizard will install MstPull Video and MP3 Downloader on yo
 
 [Files]
 Source: "dist\mstpull.exe"; DestDir: "{app}"; DestName: "MstPull.exe"; Flags: ignoreversion
+Source: "bin\windows\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "locales\*"; DestDir: "{app}\locales"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "icon.png"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist

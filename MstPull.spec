@@ -1,4 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 # PyQt6'ya ait tüm alt modülleri ve C-extension verilerini eksiksiz topla
@@ -6,6 +8,11 @@ hidden_imports = collect_submodules('PyQt6')
 pyqt6_datas = collect_data_files('PyQt6')
 
 binaries = []
+
+# Windows derlemesinde indirilen FFmpeg binary'sini portable EXE içine dahil et
+ffmpeg_path = os.path.join('bin', 'windows', 'ffmpeg.exe')
+if os.path.exists(ffmpeg_path):
+    binaries.append((ffmpeg_path, '.'))
 
 datas = [
     ('locales', 'locales'),

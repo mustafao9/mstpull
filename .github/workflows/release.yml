@@ -34,7 +34,7 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile "ffmpeg.zip"
           Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_extracted"
           $ffmpegExe = Get-ChildItem -Path "ffmpeg_extracted" -Filter "ffmpeg.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          mkdir -p bin/windows
+          New-Item -ItemType Directory -Force -Path "bin/windows"
           Copy-Item $ffmpegExe -Destination "bin/windows/ffmpeg.exe"
 
       - name: Build Executable with PyInstaller SPEC
@@ -53,7 +53,7 @@ jobs:
       - name: Collect Windows Executables
         shell: powershell
         run: |
-          mkdir -p release_assets
+          New-Item -ItemType Directory -Force -Path "release_assets"
           Copy-Item "dist\MstPull_Portable_v*.exe" -Destination "release_assets\"
           if (Test-Path "build_out\*.exe") { Copy-Item "build_out\*.exe" -Destination "release_assets\" }
           if (Test-Path "Output\*.exe") { Copy-Item "Output\*.exe" -Destination "release_assets\" }
