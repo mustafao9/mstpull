@@ -1,20 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+
+# PyQt6'ya ait tüm alt modülleri ve C-extension verilerini eksiksiz topla
+hidden_imports = collect_submodules('PyQt6')
+pyqt6_datas = collect_data_files('PyQt6')
+
+binaries = []
+
+datas = [
+    ('locales', 'locales'),
+    ('assets', 'assets'),
+    ('config', 'config'),
+    ('icon.ico', '.'),
+    ('icon.png', '.'),
+] + pyqt6_datas
 
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
-    datas=[
-        ('locales', 'locales'),
-        ('assets', 'assets'),
-        ('icon.ico', '.'),
-        ('icon.png', '.'),
-    ],
-    hiddenimports=[
-        'PyQt6.QtCore',
-        'PyQt6.QtGui',
-        'PyQt6.QtWidgets',
-    ],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hidden_imports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -22,32 +28,27 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='MstPull',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,                      # Konsol penceresini kapalı tutar
-    disable_windowed_traceback=True,   # Hata durumunda siyah konsol penceresi açılmasını engeller
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,
+    disable_windowed_traceback=True,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico',                   # Exe içine gömülen ikon
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='MstPull',
+    icon='icon.ico',
 )
