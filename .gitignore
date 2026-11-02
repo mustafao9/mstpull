@@ -1,7 +1,8 @@
 # PyInstaller & Derleme Klasörleri
 build/
 dist/
-*.spec
+build_out/
+*.deb
 
 # Log ve Geçici Dosyalar
 logs/
@@ -19,3 +20,4 @@ __pycache__/
 venv/
 .vscode/
 .idea/
+.aider*

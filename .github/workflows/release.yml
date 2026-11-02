@@ -6,7 +6,6 @@ on:
       - 'v*'
 
 jobs:
-  # 1. WINDOWS DERLEMESİ (.exe Installer & Portable)
   build-windows:
     name: Build Windows EXE & Installer
     runs-on: windows-latest
@@ -66,7 +65,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 2. LINUX DERLEMESİ (.deb Package)
   build-linux-deb:
     name: Build Linux .deb Package
     runs-on: ubuntu-latest
@@ -110,7 +108,7 @@ jobs:
           chmod +x ${DEB_NAME}/usr/bin/mstpull
           cp icon.png ${DEB_NAME}/usr/share/icons/hicolor/256x256/apps/mstpull.png 2>/dev/null || true
           
-          cat << DEBCONTROL > ${DEB_NAME}/DEBIAN/control
+          cat << 'DEBCONTROL' > ${DEB_NAME}/DEBIAN/control
 Package: mstpull
 Version: ${VERSION}
 Section: utils
@@ -121,7 +119,7 @@ Maintainer: Mustafa Satılmış <satilmisenator@gmail.com>
 Description: Modern media downloader application powered by yt-dlp and PyQt6.
 DEBCONTROL
           
-          cat << DEBDESKTOP > ${DEB_NAME}/usr/share/applications/mstpull.desktop
+          cat << 'DEBDESKTOP' > ${DEB_NAME}/usr/share/applications/mstpull.desktop
 [Desktop Entry]
 Name=MstPull
 Comment=Video and Audio Downloader
