@@ -6,6 +6,7 @@ on:
       - 'v*'
 
 jobs:
+  # 1. WINDOWS DERLEMESİ
   build-windows:
     name: Build Windows EXE & Installer
     runs-on: windows-latest
@@ -65,6 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # 2. LINUX DERLEMESİ (.deb Package)
   build-linux-deb:
     name: Build Linux .deb Package
     runs-on: ubuntu-latest
@@ -108,27 +110,9 @@ jobs:
           chmod +x ${DEB_NAME}/usr/bin/mstpull
           cp icon.png ${DEB_NAME}/usr/share/icons/hicolor/256x256/apps/mstpull.png 2>/dev/null || true
           
-          cat << 'DEBCONTROL' > ${DEB_NAME}/DEBIAN/control
-Package: mstpull
-Version: ${VERSION}
-Section: utils
-Priority: optional
-Architecture: amd64
-Depends: ffmpeg
-Maintainer: Mustafa Satılmış <satilmisenator@gmail.com>
-Description: Modern media downloader application powered by yt-dlp and PyQt6.
-DEBCONTROL
+          printf "Package: mstpull\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: amd64\nDepends: ffmpeg\nMaintainer: Mustafa Satilmis <satilmisenator@gmail.com>\nDescription: Modern media downloader application powered by yt-dlp and PyQt6.\n" "${VERSION}" > ${DEB_NAME}/DEBIAN/control
           
-          cat << 'DEBDESKTOP' > ${DEB_NAME}/usr/share/applications/mstpull.desktop
-[Desktop Entry]
-Name=MstPull
-Comment=Video and Audio Downloader
-Exec=/usr/bin/mstpull
-Icon=mstpull
-Terminal=false
-Type=Application
-Categories=Utility;Network;
-DEBDESKTOP
+          printf "[Desktop Entry]\nName=MstPull\nComment=Video and Audio Downloader\nExec=/usr/bin/mstpull\nIcon=mstpull\nTerminal=false\nType=Application\nCategories=Utility;Network;\n" > ${DEB_NAME}/usr/share/applications/mstpull.desktop
 
           dpkg-deb --build ${DEB_NAME}
 
