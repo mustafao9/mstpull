@@ -105,7 +105,8 @@ class DownloadWorker(QThread):
         ]
 
         if self.ffmpeg_path and self.ffmpeg_path.exists():
-            cmd.extend(["--ffmpeg-location", str(self.ffmpeg_path.parent)])
+            ffmpeg_loc = self.ffmpeg_path.parent if self.ffmpeg_path.is_file() else self.ffmpeg_path
+            cmd.extend(["--ffmpeg-location", str(ffmpeg_loc)])
 
         if self.rate_limit and self.rate_limit not in ["Unlimited", "Sınırsız"]:
             cmd.extend(["--limit-rate", self.rate_limit])
